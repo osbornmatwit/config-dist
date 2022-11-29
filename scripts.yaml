@@ -1,0 +1,4 @@
+scripts:
+  start: deno run --allow-write --allow-read --allow-env main.ts
+  test: deno test --allow-write --allow-read --allow-env
+  build: deno compile --allow-write --allow-read --allow-env --output config-dist main.ts

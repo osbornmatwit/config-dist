@@ -1,0 +1,20 @@
+// Example of global config for config-dist located at ~/.config/config-dist.jsonc
+// Can set defaults per machine here
+{
+    // list of folders with , which can overwrite settings above it
+    "repos": [
+        {
+            // Config file, which can override settings further, except maybe for the settings in this block?
+            // That way you can override repo settings
+            "config": "~/dotfiles/cdist.jsonc",
+            // Is the directory containing config by default
+            "workingDir": "~/dotfiles",
+            // Is either method provided in in cdist.jsonc
+            "method": "hardlink"
+        }
+    ],
+    // method to write config files
+    "method": "copy",
+    // where to store overwritten config files
+    "backupFolder": "~/.old_configs"
+}

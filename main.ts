@@ -51,8 +51,8 @@ async function mass_check_acesss(dir_path: string[], options = {}) {
   return Promise.allSettled(dir_path.map(path => check_access(path, options)));
 }
 
-async function copy_file(src: string, dest: string, mode: CopyMode) {
-
+async function copy_file(src: string, dest: string, mode: CopyMode): Promise<void> {
+  await Deno.copyFile(src, dest);
 }
 
 /**
@@ -67,8 +67,8 @@ async function copy_file(src: string, dest: string, mode: CopyMode) {
  * For softlink, can check if file is correct soft link
  * For hardlink, can just check the number of links to file in source directory
  */
-async function check_copied(src: string, dest: string, mode: CopyMode) {
-
+async function check_copied(src: string, mode: CopyMode): Promise<boolean> {
+  return (await Deno.stat(src)).isFile;
 }
 
 /**

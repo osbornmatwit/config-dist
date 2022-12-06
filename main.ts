@@ -38,7 +38,7 @@ enum CopyMode {
 }
 
 async function copy_file(src: string, dest: string, mode: CopyMode): Promise<void> {
-  await copyFile(src,dest);
+  await copy(src,dest);
 
 }
 

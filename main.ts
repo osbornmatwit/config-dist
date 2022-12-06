@@ -1,4 +1,3 @@
-import * as fs from "https://deno.land/std@0.166.0/fs/mod.ts";
 import * as jsonc from "https://deno.land/x/jsonc@1/main.ts";
 import * as flags from "https://deno.land/std@0.167.0/flags/mod.ts";
 
@@ -14,9 +13,16 @@ function fix_path(path: string): string {
     if (home == undefined) {
       throw new Error("Can't find home directory for path starting with ~");
     }
-    path = path.replace("~", home + "/");
+    path = path.replace("~", home);
   }
-  return Deno.realPathSync(path);
+  console.log(path);
+  try {
+    const realPath = Deno.realPathSync(path);
+    return realPath;
+  } catch {
+    return path;
+  }
+
 }
 
 async function parse_config(path: string) {
@@ -29,11 +35,11 @@ async function parse_config(path: string) {
   const files: Map<string, string> = config.files;
 
   for (const [source, dest] of Object.entries(files)) {
-    const realSource = await Deno.realPath(source);
+    const realSource = fix_path(source);
     if (dest instanceof Array) {
       dest.map(fix_path).map(dest => copy_file(realSource, dest, CopyMode.Copy));
     } else {
-      copy_file(realSource, dest, CopyMode.Copy);
+      copy_file(realSource, fix_path(dest), CopyMode.Copy);
     }
   }
 }
@@ -62,13 +68,12 @@ async function mass_check_acesss(dir_path: string[], options = {}) {
 }
 
 async function copy_file(src: string, dest: string, mode: CopyMode): Promise<void> {
-  const realDest = await Deno.realPath(dest);
   try {
-    await check_access(realDest);
+    await check_access(dest);
   } catch (err) {
     console.error("Can't access destination ", dest, err);
   }
-  await Deno.copyFile(src, realDest);
+  await Deno.copyFile(src, dest);
 }
 
 /**

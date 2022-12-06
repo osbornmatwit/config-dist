@@ -10,7 +10,7 @@
             // Is the directory containing config by default
             "workingDir": "~/dotfiles",
             // Is either method provided in in cdist.jsonc
-            "method": "hardlink"
+            "method": "copy"
         }
     ],
     // method to write config files

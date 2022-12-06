@@ -1,0 +1,6 @@
+{
+    "$schema": "./local.schema.json",
+    "files": {
+        "example_global.jsonc": "~/.config/cdist.jsonc"
+    }
+}

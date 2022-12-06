@@ -8,6 +8,17 @@ enum CopyMode {
   HardLink // create a hard link
 }
 
+function fix_path(path: string): string {
+  if (path.startsWith("~")) {
+    const home = Deno.env.get("HOME");
+    if (home == undefined) {
+      throw new Error("Can't find home directory for path starting with ~");
+    }
+    path = path.replace("~", home + "/");
+  }
+  return Deno.realPathSync(path);
+}
+
 async function parse_config(path: string) {
   const configText = await Deno.readTextFile(path);
   const config = jsonc.parse(configText);
@@ -18,13 +29,12 @@ async function parse_config(path: string) {
   const files: Map<string, string> = config.files;
 
   for (const [source, dest] of Object.entries(files)) {
-    try {
-      check_access(dest);
-    } catch (err) {
-      console.error("Can't access destination ", dest, err);
+    const realSource = await Deno.realPath(source);
+    if (dest instanceof Array) {
+      dest.map(fix_path).map(dest => copy_file(realSource, dest, CopyMode.Copy));
+    } else {
+      copy_file(realSource, dest, CopyMode.Copy);
     }
-
-    copy_file(source, dest, CopyMode.Copy);
   }
 }
 
@@ -52,7 +62,13 @@ async function mass_check_acesss(dir_path: string[], options = {}) {
 }
 
 async function copy_file(src: string, dest: string, mode: CopyMode): Promise<void> {
-  await Deno.copyFile(src, dest);
+  const realDest = await Deno.realPath(dest);
+  try {
+    await check_access(realDest);
+  } catch (err) {
+    console.error("Can't access destination ", dest, err);
+  }
+  await Deno.copyFile(src, realDest);
 }
 
 /**
@@ -80,11 +96,16 @@ async function run_command(config: Record<string, unknown>) {
 
 }
 
+function print_usage() {
+
+}
+
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 if (import.meta.main) {
 
   if (Deno.args.length === 0) {
     // read global config file
+    console.log("No args provided, looking for global config file...");
 
   } else {
     const args = flags.parse(Deno.args, {

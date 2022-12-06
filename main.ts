@@ -1,11 +1,31 @@
 import * as fs from "https://deno.land/std@0.166.0/fs/mod.ts";
+import * as jsonc from "https://deno.land/x/jsonc@1/main.ts";
+import * as flags from "https://deno.land/std@0.167.0/flags/mod.ts";
 
-export function add(a: number, b: number): number {
-  return a + b;
+enum CopyMode {
+  Copy, // direct copy files
+  SoftLink, // may not implement this
+  HardLink // create a hard link
 }
 
-function read_config(path: string) {
+async function parse_config(path: string) {
+  const configText = await Deno.readTextFile(path);
+  const config = jsonc.parse(configText);
+  if (!(config.files instanceof Object)) {
+    console.log("Files array not existing");
+    throw new Error(); // write custom error, and handle global config instead of local config
+  }
+  const files: Map<string, string> = config.files;
 
+  for (const [source, dest] of Object.entries(files)) {
+    try {
+      check_access(dest);
+    } catch (err) {
+      console.error("Can't access destination ", dest, err);
+    }
+
+    copy_file(source, dest, CopyMode.Copy);
+  }
 }
 
 /**
@@ -29,12 +49,6 @@ async function check_access(dir_path: string, options = {}) {
 
 async function mass_check_acesss(dir_path: string[], options = {}) {
   return Promise.allSettled(dir_path.map(path => check_access(path, options)));
-}
-
-enum CopyMode {
-  Copy, // direct copy files
-  SoftLink, // may not implement this
-  HardLink // create a hard link
 }
 
 async function copy_file(src: string, dest: string, mode: CopyMode) {
@@ -68,7 +82,26 @@ async function run_command(config: Record<string, unknown>) {
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 if (import.meta.main) {
-  console.log("Add 2 + 3 =", add(2, 3));
 
-  check_access("./example.json");
+  if (Deno.args.length === 0) {
+    // read global config file
+
+  } else {
+    const args = flags.parse(Deno.args, {
+      boolean: ["init"]
+    });
+
+    if (args.init) {
+      // initialize repo (create example config file)
+      if (args._.length !== 1 || typeof args._[0] !== 'string') {
+        console.log("please provide 1 path to initialize a new repo");
+        Deno.exit(1);
+      } else {
+        init_repo(args._[0]);
+      }
+    } else {
+      parse_config(args._[0] as string);
+    }
+  }
+
 }

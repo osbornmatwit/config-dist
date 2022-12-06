@@ -37,7 +37,8 @@ enum CopyMode {
   HardLink // create a hard link
 }
 
-async function copy_file(src: string, dest: string, mode: CopyMode) {
+async function copy_file(src: string, dest: string, mode: CopyMode): Promise<void> {
+  await copyFile(src,dest);
 
 }
 
@@ -53,8 +54,8 @@ async function copy_file(src: string, dest: string, mode: CopyMode) {
  * For softlink, can check if file is correct soft link
  * For hardlink, can just check the number of links to file in source directory
  */
-async function check_copied(src: string, dest: string, mode: CopyMode) {
-
+async function check_copied(src: string, mode: CopyMode): Promise<boolean> {
+  return exists(path);
 }
 
 /**

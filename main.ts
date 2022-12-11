@@ -44,13 +44,6 @@ async function parse_config(path: string) {
   }
 }
 
-/**
- * Creates config file and gitignore if it does not exist in provided location (creating location if it does not exist)
- * @param path Location of repo
- */
-function init_repo(path: string) {
-
-}
 
 /**
  * Checks the access of a given path and optionally creates the directory
@@ -58,11 +51,6 @@ function init_repo(path: string) {
  * @param options Options object
  * @
  */
-async function check_access(dir_path: string, options = {}) {
-
-
-}
-
 async function mass_check_acesss(dir_path: string[], options = {}) {
   return Promise.allSettled(dir_path.map(path => check_access(path, options)));
 }
@@ -92,18 +80,6 @@ async function check_copied(src: string, mode: CopyMode): Promise<boolean> {
   return (await Deno.stat(src)).isFile;
 }
 
-/**
- * Runs a command to update the config files, defined in the config-dist config file, maybe with a default.
- * For example, you might run git pull
- * @param config Options to be defined
- */
-async function run_command(config: Record<string, unknown>) {
-
-}
-
-function print_usage() {
-
-}
 
 // Learn more at https://deno.land/manual/examples/module_metadata#concepts
 if (import.meta.main) {
